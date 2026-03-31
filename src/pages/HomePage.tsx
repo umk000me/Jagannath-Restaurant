@@ -14,7 +14,7 @@ export default function HomePage() {
   useEffect(() => {
     document.title = "Jai Jagannath Restaurant - Authentic Indian Cuisine | Nashik";
   }, []);
-
+     
   return (
     <div className="relative bg-background text-foreground overflow-x-hidden">
       <FloatingParticles />
