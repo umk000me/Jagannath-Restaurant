@@ -40,7 +40,7 @@ export default function FloatingParticles() {
   }, []);
 
   return (
-    <div ref={containerRef} className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+     <div ref={containerRef} className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
       {Array.from({ length: PARTICLE_COUNT }).map((_, i) => (
         <div
           key={i}
