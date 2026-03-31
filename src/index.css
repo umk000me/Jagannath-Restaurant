@@ -106,7 +106,7 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-weight: 700;
-}
+ }
 
 .reveal { opacity: 0; transform: translateY(40px); }
 
@@ -149,12 +149,12 @@
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
-}
+ }
 
 @keyframes float-up {
   0% { transform: translateY(0) scale(1); opacity: 0.6; }
   100% { transform: translateY(-100vh) scale(0.3); opacity: 0; }
-}
+ }
 
 .particle { animation: float-up linear infinite; }
 
