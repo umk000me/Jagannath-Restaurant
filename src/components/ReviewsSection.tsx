@@ -6,7 +6,7 @@ import { Star, ChevronLeft, ChevronRight } from "lucide-react";
 gsap.registerPlugin(ScrollTrigger);
 
 const reviews = [
-  {
+   {
     name: "Rahul Sharma",
     avatar: "R",
     rating: 5,
@@ -80,7 +80,7 @@ export default function ReviewsSection() {
 
   const next = () => {
     setCurrent((c) => (c + 1) % total);
-  };
+    };
 
   useEffect(() => {
     const ctx = gsap.context(() => {
