@@ -137,6 +137,7 @@ export default function ReviewsSection() {
           </div>
         </div>
 
+        
         {/* Summary */}
         <div className="reviews-summary flex flex-col sm:flex-row items-center justify-center gap-10 mb-14 p-8 rounded-2xl border border-amber-500/15 bg-card max-w-2xl mx-auto">
           <div className="text-center">
