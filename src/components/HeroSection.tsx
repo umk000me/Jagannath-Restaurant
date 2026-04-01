@@ -4,7 +4,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ChevronDown, MapPin, Star, Clock } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
-
+ 
 // Real pure-veg Indian food images from Unsplash
 const heroSlides = [
   { url: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=1920&q=85&fit=crop", label: "Authentic Indian Thali" },
