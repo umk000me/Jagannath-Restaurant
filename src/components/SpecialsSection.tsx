@@ -11,7 +11,7 @@ const specials = [
     description: "Black lentils slow-cooked overnight with butter and cream, a house specialty.",
     price: "₹120",
     tag: "Best Seller",
-    image: "https://images.unsplash.com/photo-1613292443284-8d10ef9383fe?w=600&q=80&fit=crop",
+    image: "https://media.istockphoto.com/id/1437065088/photo/spicy-dal-makhani-or-butter-daal-served-in-a-dish-isolated-on-grey-background-top-view-of.jpg?s=612x612&w=0&k=20&c=lUVmyJkCz7XpD_IctxeI4pf4nkiifZ08Y_w97imzXPc=",
     accent: "#c0392b",
   },
   {
