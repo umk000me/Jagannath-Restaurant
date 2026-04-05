@@ -7,10 +7,12 @@ gsap.registerPlugin(ScrollTrigger);
  
 // Real pure-veg Indian food images from Unsplash
 const heroSlides = [
-  { url: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=1920&q=85&fit=crop", label: "Authentic Indian Thali" },
-  { url: "https://images.unsplash.com/photo-1613292443284-8d10ef9383fe?w=1920&q=85&fit=crop", label: "Dal Makhani" },
-  { url: "https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=1920&q=85&fit=crop", label: "Paneer Butter Masala" },
-  { url: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=1920&q=85&fit=crop", label: "Kadai Paneer" },
+  { url: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=1920&q=85&fit=crop", label: "Masala Dosa" },
+  { url: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=1920&q=85&fit=crop", label: "Paneer Masala" },
+  { url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1920&q=85&fit=crop", label: "Tea or Coffee" },
+  { url: "https://images.unsplash.com/photo-1548365328-5b849b0b0d1a?w=1920&q=85&fit=crop", label: "Pizza" },
+  { url: "https://images.unsplash.com/photo-1619895092538-128341789043?w=1920&q=85&fit=crop", label: "Lassi" },
+  { url: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=1920&q=85&fit=crop", label: "Pav Bhaji" }
 ];
 
 const SLIDE_DURATION = 5000; // ms per slide
