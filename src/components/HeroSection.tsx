@@ -7,12 +7,12 @@ gsap.registerPlugin(ScrollTrigger);
  
 // Real pure-veg Indian food images from Unsplash
 const heroSlides = [
-  { url: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=1920&q=85&fit=crop", label: "Masala Dosa" },
+  { url: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=1920&q=85&fit=crop", label: "Masala Dosa" },
   { url: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=1920&q=85&fit=crop", label: "Paneer Masala" },
-  { url: "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=1920&q=85&fit=crop", label: "Tea or Coffee" },
+  { url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1920&q=85&fit=crop", label: "Tea or Coffee" },
   { url: "https://images.unsplash.com/photo-1548365328-5b849b0b0d1a?w=1920&q=85&fit=crop", label: "Pizza" },
-  { url: "https://images.unsplash.com/photo-1619895092538-128341789043?w=1920&q=85&fit=crop", label: "Lassi" },
-  { url: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=1920&q=85&fit=crop", label: "Pav Bhaji" }
+  { url: "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?w=1920&q=85&fit=crop", label: "Lassi" },
+  { url: "https://images.unsplash.com/photo-1596797038530-2c107aa3f2b2?w=1920&q=85&fit=crop", label: "Pav Bhaji" }
 ];
 
 const SLIDE_DURATION = 5000; // ms per slide
