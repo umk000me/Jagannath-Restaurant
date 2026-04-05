@@ -28,7 +28,7 @@ const galleryItems = [
     span: "col-span-2 row-span-1",
   },
   {
-    url: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=700&q=80&fit=crop",
+    url: "https://media.istockphoto.com/id/521802535/photo/gulab-jamun-12.webp?a=1&b=1&s=612x612&w=0&k=20&c=Mri9HwChsS3eLZYXOMVHGL49Y3gLNhD-Ez-QIYeEfwQ=",
     label: "Gulab Jamun",
     span: "col-span-1 row-span-1",
   },
