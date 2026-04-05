@@ -23,7 +23,7 @@ const galleryItems = [
     span: "col-span-1 row-span-1",
   },
   {
-    url: "https://images.unsplash.com/photo-1613292443284-8d10ef9383fe?w=900&q=80&fit=crop",
+    url: "https://media.istockphoto.com/id/1437065088/photo/spicy-dal-makhani-or-butter-daal-served-in-a-dish-isolated-on-grey-background-top-view-of.jpg?s=612x612&w=0&k=20&c=lUVmyJkCz7XpD_IctxeI4pf4nkiifZ08Y_w97imzXPc=",
     label: "Dal Makhani",
     span: "col-span-2 row-span-1",
   },
@@ -33,7 +33,7 @@ const galleryItems = [
     span: "col-span-1 row-span-1",
   },
   {
-    url: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=700&q=80&fit=crop",
+    url: "https://images.unsplash.com/photo-1642821369314-100fece91d3c?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8N3x8a2FkYWklMjBwYW5lZXJ8ZW58MHx8MHx8fDA%3D",
     label: "Kadai Paneer",
     span: "col-span-1 row-span-1",
   },
