@@ -38,7 +38,7 @@ export default function LocationSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} id="contact" className="relative py-28 overflow-hidden bg-pattern-dots">
+    <section ref={sectionRef} id="contact" className="relative py-28 overflow-hidden bg-background bg-pattern-dots">
       <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 relative">

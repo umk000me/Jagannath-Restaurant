@@ -125,7 +125,7 @@ export default function SpecialsSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} id="specials" className="relative py-28 overflow-hidden">
+    <section ref={sectionRef} id="specials" className="relative py-28 overflow-hidden bg-background">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-950/10 to-transparent pointer-events-none" />
 
       {/* Decorative blobs */}

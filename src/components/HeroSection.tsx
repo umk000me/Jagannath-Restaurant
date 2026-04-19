@@ -1,253 +1,326 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ChevronDown, MapPin, Star, Clock } from "lucide-react";
 
 gsap.registerPlugin(ScrollTrigger);
- 
-// Real pure-veg Indian food images from Unsplash
-const heroSlides = [
-  { url: "https://images.unsplash.com/photo-1668236543090-82eba5ee5976?w=1920&q=85&fit=crop", label: "Masala Dosa" },
-  { url: "https://images.unsplash.com/photo-1603894584373-5ac82b2ae398?w=1920&q=85&fit=crop", label: "Paneer Masala" },
-  { url: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=1920&q=85&fit=crop", label: "Tea or Coffee" },
 
-];
-
-const SLIDE_DURATION = 5000; // ms per slide
+const TOTAL_FRAMES = 61;
+const frames = Array.from({ length: TOTAL_FRAMES }, (_, i) =>
+  `/ezgif-frame-${String(i + 1).padStart(3, "0")}.jpg`
+);
 
 export default function HeroSection() {
-  const heroRef = useRef<HTMLElement>(null);
-  const [activeIdx, setActiveIdx] = useState(0);
-  // Use refs so timer callbacks always have fresh values
-  const activeIdxRef = useRef(0);
-  const imgRefs = useRef<(HTMLImageElement | null)[]>([]);
+  const outerRef = useRef<HTMLDivElement>(null);  // scroll-spacer wrapper
+  const stickyRef = useRef<HTMLDivElement>(null);  // the pinned viewport div
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const frameIdxRef = useRef(0);
+  const imagesRef = useRef<HTMLImageElement[]>([]);
 
-  // ── Text entrance (runs once) ───────────────────────────────────────────────
+  // ── Canvas frame-scrub over 4×100vh ──────────────────────────────────────
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const outer = outerRef.current;
+    const sticky = stickyRef.current;
+    if (!canvas || !outer || !sticky) return;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
+    resize();
+
+    const draw = (idx: number) => {
+      const img = imagesRef.current[idx];
+      if (!img?.complete || !img.naturalWidth) return;
+      const w = canvas.width, h = canvas.height;
+      const ir = img.naturalWidth / img.naturalHeight;
+      const cr = w / h;
+      let sx: number, sy: number, sw: number, sh: number;
+      if (ir > cr) {
+        sh = img.naturalHeight; sw = sh * cr;
+        sx = (img.naturalWidth - sw) / 2; sy = 0;
+      } else {
+        sw = img.naturalWidth; sh = sw / cr;
+        sx = 0; sy = (img.naturalHeight - sh) / 2;
+      }
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+    };
+
+    let loaded = 0;
+    imagesRef.current = frames.map((src, i) => {
+      const img = new Image();
+      img.onload = img.onerror = () => {
+        loaded++;
+        if (i === 0 && img.complete) draw(0);
+        if (loaded === TOTAL_FRAMES) init();
+      };
+      img.src = src;
+      return img;
+    });
+
+    const init = () => {
+      draw(0);
+
+      // Scrub through frames while `outer` scrolls past.
+      // `outer` is 400vh; pin the sticky child to top throughout.
+      ScrollTrigger.create({
+        trigger: outer,
+        start: "top top",
+        end: "bottom bottom",
+        pin: sticky,           // GSAP pins this div — works even w/ overflow:hidden parent
+        pinSpacing: false,     // outer section already provides the scroll space
+        scrub: 0.5,
+        anticipatePin: 1,
+        onUpdate(self) {
+          const idx = Math.min(TOTAL_FRAMES - 1, Math.round(self.progress * (TOTAL_FRAMES - 1)));
+          if (idx !== frameIdxRef.current) {
+            frameIdxRef.current = idx;
+            draw(idx);
+          }
+        },
+      });
+    };
+
+    const onResize = () => {
+      resize();
+      draw(frameIdxRef.current);
+      ScrollTrigger.refresh();
+    };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      ScrollTrigger.getAll().forEach(st => st.trigger === outer && st.kill());
+    };
+  }, []);
+
+  // ── Hero text entrance + fade out on first scroll ────────────────────────
   useEffect(() => {
     const ctx = gsap.context(() => {
-      const tl = gsap.timeline({ delay: 0.3 });
-      tl.from(".hero-label",      { y: 24, opacity: 0, duration: 0.9, ease: "power3.out" })
-        .from(".hero-title-line", { y: 110, opacity: 0, stagger: 0.18, duration: 1.1, ease: "power4.out" }, "-=0.5")
-        .from(".hero-subtitle",   { y: 24, opacity: 0, stagger: 0.12, duration: 0.8, ease: "power3.out" }, "-=0.4")
-        .from(".hero-cta-group",  { y: 30, opacity: 0, duration: 0.8, ease: "power3.out" }, "-=0.3")
-        .from(".hero-stats",      { y: 20, opacity: 0, stagger: 0.1, duration: 0.6, ease: "power3.out" }, "-=0.4");
+      gsap.timeline({ delay: 0.4 })
+        .from(".hero-label", { y: 28, opacity: 0, duration: 1, ease: "power3.out" })
+        .from(".hero-title-line", { y: 120, opacity: 0, stagger: 0.2, duration: 1.2, ease: "power4.out" }, "-=0.5")
+        .from(".hero-subtitle", { y: 28, opacity: 0, stagger: 0.12, duration: 0.9, ease: "power3.out" }, "-=0.4")
+        .from(".hero-cta-group", { y: 32, opacity: 0, duration: 0.8, ease: "power3.out" }, "-=0.3")
+        .from(".hero-stats", { y: 20, opacity: 0, stagger: 0.1, duration: 0.6, ease: "power3.out" }, "-=0.4");
 
       gsap.to(".scroll-arrow", { y: 10, duration: 1.2, ease: "power1.inOut", repeat: -1, yoyo: true });
 
-      gsap.to(".hero-content", {
-        yPercent: 18, opacity: 0.2, ease: "none",
-        scrollTrigger: { trigger: heroRef.current, start: "top top", end: "80% top", scrub: true },
+      // Fade out hero text over the very first portion of scroll (first 20% / 0.8vh)
+      gsap.to(".hero-content-overlay", {
+        yPercent: 8, opacity: 0, ease: "none",
+        scrollTrigger: {
+          trigger: outerRef.current,
+          start: "top top",
+          end: () => `+=${window.innerHeight * 0.8}`,
+          scrub: true,
+        },
       });
-    }, heroRef);
+
+      // Story chapters timeline — linked to the full 400vh scroll
+      // We position elements initially slightly lower with opacity 0
+      gsap.set(".story-text", { y: 20, opacity: 0 });
+
+      const storyTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: outerRef.current,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 1, // smooth timeline scrubbing
+        }
+      });
+
+      // Total timeline duration is 1 (representing 100% of the 400vh scroll)
+
+      // Story 1: "Handcrafted Perfection" (Shows up while paneers are mid-air)
+      storyTl.to(".story-1", { opacity: 1, y: 0, duration: 0.08, ease: "power2.out" }, 0.22)
+        .to(".story-1", { opacity: 0, y: -20, duration: 0.08, ease: "power2.in" }, 0.38);
+
+      // Story 2: "Symphony of Spices" (Shows as paneer nears the curry)
+      storyTl.to(".story-2", { opacity: 1, y: 0, duration: 0.08, ease: "power2.out" }, 0.48)
+        .to(".story-2", { opacity: 0, y: -20, duration: 0.08, ease: "power2.in" }, 0.65);
+
+      // Story 3: "A Feast for the Senses" (Shows exactly during the massive splash)
+      storyTl.to(".story-3", { opacity: 1, y: 0, duration: 0.08, ease: "power2.out" }, 0.72)
+        .to(".story-3", { opacity: 0, y: -20, duration: 0.08, ease: "power2.in" }, 0.90);
+
+    }, stickyRef);
+
     return () => ctx.revert();
   }, []);
 
-  // ── Ken-Burns on first image ────────────────────────────────────────────────
-  useEffect(() => {
-    const img = imgRefs.current[0];
-    if (img) gsap.fromTo(img, { scale: 1.12 }, { scale: 1, duration: 7, ease: "power1.out" });
-  }, []);
-
-  // ── Carousel timer — ref-based, no stale closure ────────────────────────────
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const prev = activeIdxRef.current;
-      const next = (prev + 1) % heroSlides.length;
-
-      // GSAP cross-fade between wrapper divs
-      const wrappers = heroRef.current?.querySelectorAll(".hero-slide") as NodeListOf<HTMLElement>;
-      if (!wrappers || wrappers.length < heroSlides.length) return;
-
-      const prevWrap = wrappers[prev];
-      const nextWrap = wrappers[next];
-      const nextImg  = imgRefs.current[next];
-
-      // Bring next slide on top, start zoomed-in
-      gsap.set(nextWrap, { zIndex: 3, opacity: 0 });
-      if (nextImg) gsap.set(nextImg, { scale: 1.12 });
-
-      // Fade in & Ken-Burns for incoming slide
-      gsap.to(nextWrap, { opacity: 1, duration: 1.5, ease: "power2.inOut" });
-      if (nextImg) gsap.to(nextImg, { scale: 1, duration: 7, ease: "power1.out" });
-
-      // Fade out & drop z-index of outgoing slide
-      gsap.to(prevWrap, {
-        opacity: 0, duration: 1.5, ease: "power2.inOut",
-        onComplete: () => gsap.set(prevWrap, { zIndex: 1 }),
-      });
-      gsap.set(nextWrap, { zIndex: 2 });
-
-      activeIdxRef.current = next;
-      setActiveIdx(next);
-    }, SLIDE_DURATION);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  // Manual dot navigation
-  const goToSlide = (idx: number) => {
-    if (idx === activeIdxRef.current) return;
-    const prev = activeIdxRef.current;
-    const wrappers = heroRef.current?.querySelectorAll(".hero-slide") as NodeListOf<HTMLElement>;
-    if (!wrappers) return;
-
-    const prevWrap = wrappers[prev];
-    const nextWrap = wrappers[idx];
-    const nextImg  = imgRefs.current[idx];
-
-    gsap.set(nextWrap, { zIndex: 3, opacity: 0 });
-    if (nextImg) gsap.set(nextImg, { scale: 1.12 });
-
-    gsap.to(nextWrap, { opacity: 1, duration: 1.2, ease: "power2.inOut" });
-    if (nextImg) gsap.to(nextImg, { scale: 1, duration: 7, ease: "power1.out" });
-
-    gsap.to(prevWrap, {
-      opacity: 0, duration: 1.2, ease: "power2.inOut",
-      onComplete: () => gsap.set(prevWrap, { zIndex: 1 }),
-    });
-    gsap.set(nextWrap, { zIndex: 2 });
-
-    activeIdxRef.current = idx;
-    setActiveIdx(idx);
-  };
-
   return (
-    <section ref={heroRef} id="home" className="relative w-full h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
+    /**
+     * outerRef: 400vh div — provides the scroll distance for the frame animation.
+     * stickyRef: 100vh div pinned by GSAP — stays in viewport for all 400vh.
+     *
+     * NOTE: id="home" stays on the outer so nav anchors work.
+     */
+    <div ref={outerRef} id="home" style={{ height: "400vh", position: "relative" }}>
+      <div
+        ref={stickyRef}
+        style={{ width: "100%", height: "100vh", overflow: "hidden", position: "relative" }}
+      >
+        {/* Canvas */}
+        <canvas ref={canvasRef}
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: "block" }} />
 
-      {/* ── Slide layers ────────────────────────────────────────────── */}
-      {heroSlides.map((slide, i) => (
-        <div
-          key={i}
-          className="hero-slide absolute inset-0 overflow-hidden"
-          style={{ zIndex: i === 0 ? 2 : 1, opacity: i === 0 ? 1 : 0 }}
-        >
-          <img
-            ref={(el) => { imgRefs.current[i] = el; }}
-            src={slide.url}
-            alt={slide.label}
-            className="w-full h-full object-cover object-center"
-            loading={i === 0 ? "eager" : "lazy"}
-          />
+        {/* Radial vignette */}
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none", zIndex: 10,
+          background: "radial-gradient(ellipse at center, transparent 40%, rgba(10,6,2,0.70) 100%)"
+        }} />
+
+        {/* Cinematic top-to-bottom gradient */}
+        <div style={{
+          position: "absolute", inset: 0, pointerEvents: "none", zIndex: 10,
+          background: "linear-gradient(to bottom, rgba(10,6,2,0.82) 0%, rgba(10,6,2,0.18) 25%, rgba(10,6,2,0.18) 75%, rgba(10,6,2,0.95) 100%)"
+        }} />
+
+        {/* Film grain */}
+        <div className="grain-overlay" style={{ position: "absolute", inset: 0, zIndex: 10, pointerEvents: "none" }} />
+
+        {/* Bottom bleed */}
+        <div style={{
+          position: "absolute", bottom: 0, left: 0, right: 0, height: "10vh",
+          pointerEvents: "none", zIndex: 11,
+          background: "linear-gradient(to top, rgba(10,6,2,1) 0%, transparent 100%)"
+        }} />
+
+        {/* Side ornaments */}
+        <div className="hidden lg:flex" style={{ position: "absolute", left: 32, top: "50%", transform: "translateY(-50%)", zIndex: 20, flexDirection: "column", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 1, height: 80, background: "linear-gradient(to bottom, transparent, rgba(212,168,67,0.5))" }} />
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(212,168,67,0.7)" }} />
+          <div style={{ width: 1, height: 80, background: "linear-gradient(to bottom, rgba(212,168,67,0.5), transparent)" }} />
         </div>
-      ))}
+        <div className="hidden lg:flex" style={{ position: "absolute", right: 32, top: "50%", transform: "translateY(-50%)", zIndex: 20, flexDirection: "column", alignItems: "center", gap: 12 }}>
+          <div style={{ width: 1, height: 80, background: "linear-gradient(to bottom, transparent, rgba(212,168,67,0.5))" }} />
+          <div style={{ width: 6, height: 6, borderRadius: "50%", background: "rgba(212,168,67,0.7)" }} />
+          <div style={{ width: 1, height: 80, background: "linear-gradient(to bottom, rgba(212,168,67,0.5), transparent)" }} />
+        </div>
 
-      {/* ── Cinematic overlay ───────────────────────────────────────── */}
-      <div className="cinematic-overlay absolute inset-0 z-10 pointer-events-none" />
-      <div className="grain-overlay z-10 pointer-events-none" />
+        {/* ── Hero content (fades out on scroll start) ─────────────────── */}
+        <div className="hero-content-overlay"
+          style={{ position: "absolute", inset: 0, zIndex: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ textAlign: "center", padding: "0 24px", maxWidth: 900, margin: "0 auto" }}>
 
-      {/* ── Dot indicators ─────────────────────────────────────────── */}
-      <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-30 flex gap-2.5 items-center">
-        {heroSlides.map((_, i) => (
-          <button
-            key={i}
-            onClick={() => goToSlide(i)}
-            className={`rounded-full transition-all duration-500 ${
-              i === activeIdx ? "w-8 h-2 bg-amber-400" : "w-2 h-2 bg-amber-400/35 hover:bg-amber-400/60"
-            }`}
-          />
-        ))}
-      </div>
-
-      {/* ── Slide label ────────────────────────────────────────────── */}
-      <div className="absolute bottom-24 right-8 z-30 hidden md:block text-right">
-        <p className="text-amber-400/60 text-xs tracking-widest uppercase">{heroSlides[activeIdx].label}</p>
-      </div>
-
-      {/* ── Side ornaments ─────────────────────────────────────────── */}
-      <div className="absolute left-8 top-1/2 -translate-y-1/2 z-20 hidden lg:flex flex-col items-center gap-3">
-        <div className="w-px h-20 bg-gradient-to-b from-transparent to-amber-500/50" />
-        <div className="w-1.5 h-1.5 rounded-full bg-amber-500/70" />
-        <div className="w-px h-20 bg-gradient-to-b from-amber-500/50 to-transparent" />
-      </div>
-      <div className="absolute right-8 top-1/2 -translate-y-1/2 z-20 hidden lg:flex flex-col items-center gap-3">
-        <div className="w-px h-20 bg-gradient-to-b from-transparent to-amber-500/50" />
-        <div className="w-1.5 h-1.5 rounded-full bg-amber-500/70" />
-        <div className="w-px h-20 bg-gradient-to-b from-amber-500/50 to-transparent" />
-      </div>
-
-      {/* ── Hero content ───────────────────────────────────────────── */}
-      <div className="hero-content relative z-20 text-center px-6 max-w-5xl mx-auto">
-        {/* Pure veg badge */}
-        <div className="hero-label inline-flex items-center gap-3 mb-6">
-          <div className="h-px w-10 bg-amber-500/60" />
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-sm border-2 border-green-500 flex items-center justify-center">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
+            {/* Pure-veg badge */}
+            <div className="hero-label" style={{ display: "inline-flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+              <div style={{ height: 1, width: 40, background: "rgba(212,168,67,0.6)" }} />
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ width: 16, height: 16, borderRadius: 2, border: "2px solid #22c55e", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#22c55e" }} />
+                </div>
+                <span style={{ color: "#F0C860", fontSize: 11, letterSpacing: "0.3em", textTransform: "uppercase", fontWeight: 500 }}>Pure Veg · Nashik</span>
+              </div>
+              <div style={{ height: 1, width: 40, background: "rgba(212,168,67,0.6)" }} />
             </div>
-            <span className="text-amber-400 text-xs tracking-[0.3em] uppercase font-medium">Pure Veg · Nashik</span>
-          </div>
-          <div className="h-px w-10 bg-amber-500/60" />
-        </div>
 
-        <div className="overflow-hidden mb-2">
-          <h1 className="hero-title-line text-6xl md:text-8xl lg:text-9xl font-bold leading-tight"
-            style={{ fontFamily: "'Playfair Display', serif", color: "#F0C860" }}>
-            Jai
-          </h1>
-        </div>
-        <div className="overflow-hidden mb-6">
-          <h1 className="hero-title-line text-6xl md:text-8xl lg:text-9xl font-bold leading-tight"
-            style={{ fontFamily: "'Playfair Display', serif", color: "#D4A843" }}>
-            Jagannath
-          </h1>
-        </div>
-
-        <div className="hero-subtitle flex items-center justify-center gap-4 mb-4">
-          <div className="h-px w-16 bg-gradient-to-r from-transparent to-amber-500/60" />
-          <span className="text-amber-400 text-lg">❖</span>
-          <span className="text-amber-100/70 text-sm tracking-[0.2em] uppercase">Authentic Pure Veg Cuisine</span>
-          <span className="text-amber-400 text-lg">❖</span>
-          <div className="h-px w-16 bg-gradient-to-l from-transparent to-amber-500/60" />
-        </div>
-
-        <p className="hero-subtitle text-amber-100/60 text-lg max-w-xl mx-auto mb-10 leading-relaxed">
-          Experience the soul of India in every bite — traditional recipes, warm hospitality, and flavors that linger.
-        </p>
-
-        <div className="hero-cta-group flex flex-col sm:flex-row gap-4 justify-center mb-14">
-          <button onClick={() => document.querySelector("#menu")?.scrollIntoView({ behavior: "smooth" })}
-            className="btn-gold px-8 py-3.5 rounded-full text-sm tracking-wider">
-            Explore Menu
-          </button>
-          <a href="https://wa.me/919975260955?text=Hello%20Jai%20Jagannath%20Restaurant!%20I%20would%20like%20to%20reserve%20a%20table.%0A%0ADate%3A%20%0ATime%3A%20%0ATable%20No%3A%20%0AGuests%3A%20"
-            target="_blank" rel="noopener noreferrer"
-            className="px-8 py-3.5 rounded-full text-sm tracking-wider border border-amber-500/40 text-amber-300 hover:bg-amber-500/10 transition-all duration-300 inline-block text-center">
-            Reserve a Table
-          </a>
-        </div>
-
-        <div className="flex items-center justify-center gap-8 md:gap-14">
-          <div className="hero-stats text-center">
-            <div className="flex items-center gap-1 justify-center stars mb-1">
-              {[1,2,3,4].map(i => <Star key={i} size={14} fill="currentColor" />)}
-              <Star size={14} fill="currentColor" />
+            <div style={{ overflow: "hidden", marginBottom: 8 }}>
+              <h1 className="hero-title-line" style={{ fontFamily: "'Playfair Display', serif", color: "#F0C860", fontSize: "clamp(3.5rem,10vw,7rem)", fontWeight: 700, lineHeight: 1.1, margin: 0 }}>Jai</h1>
             </div>
-            <p className="text-amber-400 font-bold text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>3.9 / 5</p>
-            <p className="text-amber-100/50 text-xs tracking-wider uppercase">Google Rating</p>
-          </div>
-          <div className="w-px h-10 bg-amber-500/20" />
-          <div className="hero-stats text-center">
-            <div className="flex items-center gap-1 justify-center text-amber-400 mb-1">
-              <MapPin size={14} />
+            <div style={{ overflow: "hidden", marginBottom: 24 }}>
+              <h1 className="hero-title-line" style={{ fontFamily: "'Playfair Display', serif", color: "#D4A843", fontSize: "clamp(3.5rem,10vw,7rem)", fontWeight: 700, lineHeight: 1.1, margin: 0 }}>Jagannath</h1>
             </div>
-            <p className="text-amber-400 font-bold text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>MG Road</p>
-            <p className="text-amber-100/50 text-xs tracking-wider uppercase">Shalimar, Nashik</p>
-          </div>
-          <div className="w-px h-10 bg-amber-500/20" />
-          <div className="hero-stats text-center">
-            <div className="flex items-center gap-1 justify-center text-amber-400 mb-1">
-              <Clock size={14} />
+
+            <div className="hero-subtitle" style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 16, marginBottom: 16 }}>
+              <div style={{ height: 1, width: 64, background: "linear-gradient(to right, transparent, rgba(212,168,67,0.6))" }} />
+              <span style={{ color: "#F0C860", fontSize: 18 }}>❖</span>
+              <span style={{ color: "rgba(240,220,170,0.7)", fontSize: 13, letterSpacing: "0.2em", textTransform: "uppercase" }}>Authentic Pure Veg Cuisine</span>
+              <span style={{ color: "#F0C860", fontSize: 18 }}>❖</span>
+              <div style={{ height: 1, width: 64, background: "linear-gradient(to left, transparent, rgba(212,168,67,0.6))" }} />
             </div>
-            <p className="text-amber-400 font-bold text-lg" style={{ fontFamily: "'Playfair Display', serif" }}>Open</p>
-            <p className="text-amber-100/50 text-xs tracking-wider uppercase">3 PM – 11 PM</p>
+
+            <p className="hero-subtitle" style={{ color: "rgba(240,220,170,0.60)", fontSize: 17, maxWidth: 520, margin: "0 auto 40px", lineHeight: 1.7 }}>
+              Experience the soul of India in every bite — traditional recipes,<br />warm hospitality, and flavors that linger.
+            </p>
+
+            <div className="hero-cta-group" style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center", marginBottom: 56 }}>
+              <button onClick={() => document.querySelector("#menu")?.scrollIntoView({ behavior: "smooth" })}
+                className="btn-gold" style={{ padding: "14px 32px", borderRadius: 9999, fontSize: 13, letterSpacing: "0.05em" }}>
+                Explore Menu
+              </button>
+              <a href="https://wa.me/919975260955?text=Hello%20Jai%20Jagannath%20Restaurant!%20I%20would%20like%20to%20reserve%20a%20table.%0A%0ADate%3A%20%0ATime%3A%20%0ATable%20No%3A%20%0AGuests%3A%20"
+                target="_blank" rel="noopener noreferrer"
+                style={{ padding: "14px 32px", borderRadius: 9999, fontSize: 13, letterSpacing: "0.05em", border: "1px solid rgba(212,168,67,0.4)", color: "#f3c86a", textDecoration: "none", display: "inline-block", textAlign: "center" }}>
+                Reserve a Table
+              </a>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "3vw" }}>
+              <div className="hero-stats" style={{ textAlign: "center" }}>
+                <div className="stars" style={{ display: "flex", gap: 2, justifyContent: "center", marginBottom: 4 }}>
+                  {[1, 2, 3, 4, 5].map(i => <Star key={i} size={13} fill="currentColor" />)}
+                </div>
+                <p style={{ fontFamily: "'Playfair Display', serif", color: "#F0C860", fontWeight: 700, fontSize: 17, margin: "0 0 2px" }}>3.9 / 5</p>
+                <p style={{ color: "rgba(240,220,170,0.5)", fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase" }}>Google Rating</p>
+              </div>
+              <div style={{ width: 1, height: 40, background: "rgba(212,168,67,0.2)" }} />
+              <div className="hero-stats" style={{ textAlign: "center" }}>
+                <div style={{ color: "#F0C860", display: "flex", justifyContent: "center", marginBottom: 4 }}><MapPin size={14} /></div>
+                <p style={{ fontFamily: "'Playfair Display', serif", color: "#F0C860", fontWeight: 700, fontSize: 17, margin: "0 0 2px" }}>MG Road</p>
+                <p style={{ color: "rgba(240,220,170,0.5)", fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase" }}>Shalimar, Nashik</p>
+              </div>
+              <div style={{ width: 1, height: 40, background: "rgba(212,168,67,0.2)" }} />
+              <div className="hero-stats" style={{ textAlign: "center" }}>
+                <div style={{ color: "#F0C860", display: "flex", justifyContent: "center", marginBottom: 4 }}><Clock size={14} /></div>
+                <p style={{ fontFamily: "'Playfair Display', serif", color: "#F0C860", fontWeight: 700, fontSize: 17, margin: "0 0 2px" }}>Open</p>
+                <p style={{ color: "rgba(240,220,170,0.5)", fontSize: 11, letterSpacing: "0.15em", textTransform: "uppercase" }}>3 PM – 11 PM</p>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <button onClick={() => document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" })}
-        className="scroll-arrow absolute bottom-8 left-1/2 -translate-x-1/2 z-20 text-amber-400/60 hover:text-amber-400 transition-colors">
-        <ChevronDown size={32} />
-      </button>
-    </section>
+        {/* ── Story Chapters (Animated via GSAP scrub) ───────────────────── */}
+        <div className="story-text story-1" style={{ position: "absolute", bottom: "18%", width: "100%", textAlign: "center", zIndex: 25, pointerEvents: "none" }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", color: "#F0C860", fontSize: "clamp(2rem, 5vw, 3rem)", fontWeight: 700, margin: 0, textShadow: "0 4px 16px rgba(0,0,0,0.9)" }}>
+            Handcrafted Perfection
+          </h2>
+          <p style={{ color: "rgba(240,220,170,0.85)", fontSize: "clamp(0.85rem, 2vw, 1.1rem)", letterSpacing: "0.2em", textTransform: "uppercase", marginTop: "12px", textShadow: "0 2px 12px rgba(0,0,0,0.9)" }}>
+            Fresh Paneer, Made Daily
+          </p>
+        </div>
+
+        <div className="story-text story-2" style={{ position: "absolute", bottom: "18%", width: "100%", textAlign: "center", zIndex: 25, pointerEvents: "none" }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", color: "#F0C860", fontSize: "clamp(2rem, 5vw, 3rem)", fontWeight: 700, margin: 0, textShadow: "0 4px 16px rgba(0,0,0,0.9)" }}>
+            A Symphony of Spices
+          </h2>
+          <p style={{ color: "rgba(240,220,170,0.85)", fontSize: "clamp(0.85rem, 2vw, 1.1rem)", letterSpacing: "0.2em", textTransform: "uppercase", marginTop: "12px", textShadow: "0 2px 12px rgba(0,0,0,0.9)" }}>
+            Aromatic gravies simmered to perfection
+          </p>
+        </div>
+
+        <div className="story-text story-3" style={{ position: "absolute", bottom: "18%", width: "100%", textAlign: "center", zIndex: 25, pointerEvents: "none" }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", color: "#F0C860", fontSize: "clamp(2rem, 6vw, 3.5rem)", fontWeight: 700, margin: 0, textShadow: "0 4px 20px rgba(0,0,0,0.9)" }}>
+            A Feast for the Senses
+          </h2>
+          <p style={{ color: "rgba(240,220,170,0.9)", fontSize: "clamp(0.85rem, 2vw, 1.1rem)", letterSpacing: "0.2em", textTransform: "uppercase", marginTop: "12px", textShadow: "0 2px 12px rgba(0,0,0,0.9)" }}>
+            Experience the soul of North Indian cuisine
+          </p>
+        </div>
+
+        {/* Scroll hint */}
+        <div style={{ position: "absolute", bottom: 112, left: "50%", transform: "translateX(-50%)", zIndex: 30, display: "flex", flexDirection: "column", alignItems: "center", gap: 8, pointerEvents: "none" }}>
+          <p style={{ color: "rgba(212,168,67,0.5)", fontSize: 10, letterSpacing: "0.35em", textTransform: "uppercase", margin: 0 }}>Scroll to watch</p>
+          <div style={{ display: "flex", gap: 6 }}>
+            {[0, 1, 2].map(i => (
+              <div key={i} className="animate-pulse"
+                style={{ width: 4, height: 4, borderRadius: "50%", background: "rgba(212,168,67,0.4)", animationDelay: `${i * 0.2}s` }} />
+            ))}
+          </div>
+        </div>
+
+        {/* Bouncing chevron */}
+        <button className="scroll-arrow"
+          onClick={() => document.querySelector("#about")?.scrollIntoView({ behavior: "smooth" })}
+          style={{ position: "absolute", bottom: 32, left: "50%", transform: "translateX(-50%)", zIndex: 30, color: "rgba(212,168,67,0.6)", background: "none", border: "none", cursor: "pointer", transition: "color 0.3s" }}>
+          <ChevronDown size={32} />
+        </button>
+      </div>
+    </div>
   );
 }

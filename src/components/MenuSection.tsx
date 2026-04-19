@@ -79,7 +79,7 @@ export default function MenuSection() {
   }, [active]);
 
   return (
-    <section ref={sectionRef} id="menu" className="relative py-28 overflow-hidden bg-pattern-dots">
+    <section ref={sectionRef} id="menu" className="relative py-28 overflow-hidden bg-background bg-pattern-dots">
       <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6 relative">
@@ -114,11 +114,10 @@ export default function MenuSection() {
             <button
               key={cat}
               onClick={() => setActive(cat)}
-              className={`px-5 py-2 rounded-full text-sm font-medium tracking-wide transition-all duration-300 ${
-                active === cat
+              className={`px-5 py-2 rounded-full text-sm font-medium tracking-wide transition-all duration-300 ${active === cat
                   ? "btn-gold"
                   : "border border-amber-500/25 text-amber-300/70 hover:border-amber-500/50 hover:text-amber-300"
-              }`}
+                }`}
             >
               {cat}
             </button>

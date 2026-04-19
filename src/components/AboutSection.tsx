@@ -87,7 +87,7 @@ export default function AboutSection() {
   }, []);
 
   return (
-    <section ref={sectionRef} id="about" className="relative py-28 bg-pattern-dots overflow-hidden">
+    <section ref={sectionRef} id="about" className="relative py-28 bg-background bg-pattern-dots overflow-hidden">
       {/* Background glow */}
       <div className="absolute top-1/2 left-1/4 w-[600px] h-[600px] -translate-y-1/2 rounded-full opacity-[0.03]"
         style={{ background: "radial-gradient(circle, #D4A843, transparent 70%)", filter: "blur(60px)" }} />

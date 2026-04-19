@@ -123,7 +123,7 @@ export default function GallerySection() {
   }, []);
 
   return (
-    <section ref={sectionRef} id="gallery" className="relative py-28 overflow-hidden">
+    <section ref={sectionRef} id="gallery" className="relative py-28 overflow-hidden bg-background">
       <div className="max-w-7xl mx-auto px-6">
         {/* Header */}
         <div className="gallery-header text-center mb-14">

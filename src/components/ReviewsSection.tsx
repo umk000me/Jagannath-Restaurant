@@ -118,7 +118,7 @@ export default function ReviewsSection() {
   };
 
   return (
-    <section ref={sectionRef} id="reviews" className="relative py-28 overflow-hidden">
+    <section ref={sectionRef} id="reviews" className="relative py-28 overflow-hidden bg-background">
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-amber-950/5 to-transparent pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-6">
