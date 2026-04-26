@@ -218,7 +218,7 @@ export default function HeroSection() {
                 <span style={{ color: "#F0C860", fontSize: 11, letterSpacing: "0.3em", textTransform: "uppercase", fontWeight: 500 }}>Pure Veg · Nashik</span>
               </div>
               <div style={{ height: 1, width: 40, background: "rgba(212,168,67,0.6)" }} />
-            </div>
+             </div>
 
             <div style={{ overflow: "hidden", marginBottom: 8 }}>
               <h1 className="hero-title-line" style={{ fontFamily: "'Playfair Display', serif", color: "#F0C860", fontSize: "clamp(3.5rem,10vw,7rem)", fontWeight: 700, lineHeight: 1.1, margin: 0 }}>Jai</h1>
