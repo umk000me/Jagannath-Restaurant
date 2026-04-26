@@ -236,8 +236,8 @@ export default function HeroSection() {
             </div>
 
             <p className="hero-subtitle" style={{ color: "rgba(240,220,170,0.60)", fontSize: 17, maxWidth: 520, margin: "0 auto 40px", lineHeight: 1.7 }}>
-              Experience the soul of India in every bite — traditional recipes,<br />warm hospitality, and flavors that linger.
-            </p>
+               Experience the soul of India in every bite — traditional recipes,<br />warm hospitality, and flavors that linger.
+            </p>  
 
             <div className="hero-cta-group" style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center", marginBottom: 56 }}>
               <button onClick={() => document.querySelector("#menu")?.scrollIntoView({ behavior: "smooth" })}
